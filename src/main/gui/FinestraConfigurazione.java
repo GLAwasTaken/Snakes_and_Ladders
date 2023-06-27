@@ -8,6 +8,7 @@ import main.observer.subject.ConfigurationButtonSubject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 public class FinestraConfigurazione {
     private JFrame finestra;
@@ -28,7 +29,49 @@ public class FinestraConfigurazione {
         finestra.setBounds(400,200,400,300);
         finestra.setLayout(new FlowLayout());
 
-        //TODO: aggiungere il menu con l'opzione di salvataggio/caricamento partita su/da filesystem
+        JMenuBar menu = new JMenuBar();
+
+        JMenu file = new JMenu("File");
+
+        JMenuItem apri = new JMenuItem("Apri");
+        apri.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            try {
+                if (chooser.showOpenDialog(finestra) == JFileChooser.APPROVE_OPTION) {
+                    File configurazione = chooser.getSelectedFile();
+                    if (!configurazione.exists()) {
+                        JOptionPane.showMessageDialog(finestra,"File non esistente");
+                    }
+                    else {
+                        //TODO: aggiungere interpreter per interpretare file JSON
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        //TODO: aggiungere un ActionListener per ogni JMenuItem
+        JMenuItem salva = new JMenuItem("Salva");
+        JMenuItem salvaConNome = new JMenuItem("Salva con nome");
+        JMenuItem esci = new JMenuItem("Esci");
+
+        file.add(apri);
+        file.add(salva);
+        file.add(salvaConNome);
+        file.addSeparator();
+        file.add(esci);
+
+        JMenu help = new JMenu("Help");
+
+        JMenuItem cosaFare = new JMenuItem("Cosa fare?");
+        JMenuItem about = new JMenuItem("About");
+
+        help.add(cosaFare);
+        help.add(about);
+
+        menu.add(file);
+        menu.add(help);
+        finestra.setJMenuBar(menu);
 
         JTextField numGiocatori = new JTextField(20);
         Placeholder.setPlaceholder(numGiocatori,PLACEHOLDER1);
