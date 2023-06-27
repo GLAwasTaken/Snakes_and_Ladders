@@ -1,0 +1,33 @@
+package main.observer.subject;
+
+import main.configurazione.Configurazione;
+import main.observer.ButtonObserver;
+import main.observer.ConfigurationObserver;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class ConfigurationButtonSubject extends AbstractButtonSubject {
+    private Configurazione conf;
+
+    public ConfigurationButtonSubject(JButton subject) {
+        super();
+        this.subject = subject;
+    }
+
+    public Configurazione getConf() {
+        return conf;
+    }
+
+    public void setConf(Configurazione conf) {
+        this.conf = conf;
+    }
+
+    @Override
+    public void attach(ButtonObserver o) {
+        if (!(o instanceof ConfigurationObserver)) {
+            throw new IllegalArgumentException();
+        }
+        observers.add(o);
+    }
+}
