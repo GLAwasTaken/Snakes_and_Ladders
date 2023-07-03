@@ -8,7 +8,7 @@ import main.observer.subject.ConfigurationButtonSubject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
 import java.util.concurrent.Semaphore;
 
 public class FinestraConfigurazione {
@@ -42,18 +42,22 @@ public class FinestraConfigurazione {
             try {
                 if (chooser.showOpenDialog(finestra) == JFileChooser.APPROVE_OPTION) {
                     File configurazione = chooser.getSelectedFile();
-                    if (!configurazione.exists()) {
-                        JOptionPane.showMessageDialog(finestra,"File non esistente");
-                    }
-                    else {
-                        //TODO: aggiungere interpreter per interpretare file JSON
+                    try {
+                        conf = getConfigurazione(configurazione);
+                        if (configurazioneCorretta(conf)) {
+                            submit.setConf(conf);
+                            submit.notifica();
+                            mutex.release();
+                            finestra.dispose();
+                        } else throw new IllegalArgumentException();
+                    } catch (IllegalArgumentException ex) {
+                        JOptionPane.showMessageDialog(finestra,"Il file non rappresenta una configurazione valida");
                     }
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         });
-        //TODO: aggiungere un ActionListener per ogni JMenuItem
         JMenuItem salva = new JMenuItem("Salva");
         JMenuItem salvaConNome = new JMenuItem("Salva con nome");
         JMenuItem esci = new JMenuItem("Esci");
@@ -104,47 +108,97 @@ public class FinestraConfigurazione {
 
         JCheckBox automatico = new JCheckBox("avanzamento automatico");
 
+        //TODO: aggiungere un ActionListener per ogni JMenuItem
+        salva.addActionListener(e -> {
+            conf = buildConfigurazione(
+                    numGiocatori,righe,colonne,
+                    dadoSingolo,lancioUnico,doppioSei,
+                    caselleSosta,casellePremio,pescaCarta,ulterioriCarte,
+                    automatico);
+            if (!configurazioneCorretta(conf)) {
+                JOptionPane.showMessageDialog(finestra,"Impossibile salvare, configurazione non valida!","Errore di inserimento",JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+                JFileChooser chooser = new JFileChooser();
+                File output = null;
+                if (chooser.showSaveDialog(finestra) == JFileChooser.APPROVE_OPTION) {
+                    output = chooser.getSelectedFile();
+                }
+                if (output != null) {
+                    int i = output.getName().lastIndexOf('.');
+                    String ext = output.getName().substring(i+1);
+                    if (!ext.equals("config")) {
+                        JOptionPane.showMessageDialog(finestra,"L'estensione '.config' è l'unica valida!");
+                    }
+                    else {
+                        if (!output.exists()) {
+                            save(output);
+                        }
+                        else {
+                            int conferma = JOptionPane.showConfirmDialog(finestra,
+                                    "Sovrascrivere "+output.getName()+"?",
+                                    "Conferma salvataggio",
+                                    JOptionPane.YES_NO_OPTION);
+                            if (conferma == JOptionPane.YES_OPTION) {
+                                save(output);
+                            }
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(finestra,"Nessun Salvataggio");
+                }
+            }
+        });
+
+        salvaConNome.addActionListener(e -> {
+            conf = buildConfigurazione(
+                    numGiocatori,righe,colonne,
+                    dadoSingolo,lancioUnico,doppioSei,
+                    caselleSosta,casellePremio,pescaCarta,ulterioriCarte,
+                    automatico);
+            if (!configurazioneCorretta(conf)) {
+                JOptionPane.showMessageDialog(finestra,"Impossibile salvare, configurazione non valida!","Errore di inserimento",JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+                JFileChooser chooser = new JFileChooser();
+                File output = null;
+                if (chooser.showSaveDialog(finestra) == JFileChooser.APPROVE_OPTION) {
+                    output = chooser.getSelectedFile();
+                }
+                if (output != null) {
+                    int i = output.getName().lastIndexOf('.');
+                    String ext = output.getName().substring(i+1);
+                    if (!ext.equals("config")) {
+                        JOptionPane.showMessageDialog(finestra,"Estensione non compatibile");
+                    } else {
+                        save(output);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(finestra,"Nessun Salvataggio");
+                }
+            }
+        });
+
         //ConfigurationButtonSubject submit = new ConfigurationButtonSubject(new JButton("Submit"));
         submit.getSubject().addActionListener(e -> {
             try {
-                int ng,r,c;
-
-                if (numGiocatori.getText().equals(PLACEHOLDER1)) {
-                    ng = 2;
-                } else {
-                    ng = Integer.parseInt(numGiocatori.getText());
-                }
-
-                if (righe.getText().equals(PLACEHOLDER2)) {
-                    r = 10;
-                } else {
-                    r = Integer.parseInt(righe.getText());
-                }
-
-                if (colonne.getText().equals(PLACEHOLDER2)) {
-                    c = 10;
-                } else {
-                    c = Integer.parseInt(colonne.getText());
-                }
-
-                if (ng < 2 || ng > 12 ||
-                    r < 5 || r > 10 ||
-                    c < 5 || c > 10) {
-                        throw new IllegalArgumentException();
-                }
                 int conferma = conferma();
                 if (conferma == JOptionPane.YES_OPTION) {
-                    conf = new Configurazione(
-                            ng,r,c,
-                            dadoSingolo.isSelected(), lancioUnico.isSelected(), doppioSei.isSelected(),
-                            caselleSosta.isSelected(), casellePremio.isSelected(),
-                            pescaCarta.isSelected(), ulterioriCarte.isSelected(),
-                            automatico.isSelected()
+                    conf = buildConfigurazione(
+                            numGiocatori,righe,colonne,
+                            dadoSingolo, lancioUnico, doppioSei,
+                            caselleSosta, casellePremio, pescaCarta, ulterioriCarte,
+                            automatico
                     );
-                    submit.setConf(conf);
-                    submit.notifica();
-                    mutex.release();
-                    finestra.dispose();
+                    if (configurazioneCorretta(conf)) {
+                        submit.setConf(conf);
+                        submit.notifica();
+                        mutex.release();
+                        finestra.dispose();
+                    }
+                    else {
+                        throw new IllegalArgumentException();
+                    }
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(finestra,"Inserire solo numeri interi positivi nelle aree di testo!","Errore di inserimento",JOptionPane.ERROR_MESSAGE);
@@ -186,6 +240,147 @@ public class FinestraConfigurazione {
         finestra.add(submit.getSubject());
 
         finestra.setVisible(true);
+    }
+
+    private Configurazione buildConfigurazione(
+            JTextField numGiocatori, JTextField righe, JTextField colonne,
+            JCheckBox dadoSingolo, JCheckBox lancioUnico, JCheckBox doppioSei,
+            JCheckBox caselleSosta, JCheckBox casellePremio, JCheckBox pescaCarta,
+            JCheckBox ulterioriCarte, JCheckBox automatico
+    ) {
+        int ng,r,c;
+
+        if (numGiocatori.getText().equals(PLACEHOLDER1)) {
+            ng = 2;
+        } else {
+            ng = Integer.parseInt(numGiocatori.getText());
+        }
+
+        if (righe.getText().equals(PLACEHOLDER2)) {
+            r = 10;
+        } else {
+            r = Integer.parseInt(righe.getText());
+        }
+
+        if (colonne.getText().equals(PLACEHOLDER2)) {
+            c = 10;
+        } else {
+            c = Integer.parseInt(colonne.getText());
+        }
+
+        return new Configurazione(
+                ng, r, c,
+                dadoSingolo.isSelected(), lancioUnico.isSelected(), doppioSei.isSelected(),
+                caselleSosta.isSelected(), casellePremio.isSelected(),
+                pescaCarta.isSelected(), ulterioriCarte.isSelected(),
+                automatico.isSelected()
+        );
+    }
+
+    private Configurazione getConfigurazione(File f) throws FileNotFoundException {
+        if (!f.exists()) {
+            JOptionPane.showMessageDialog(finestra,"File non esistente");
+        }
+        else {
+            int i = f.getName().lastIndexOf('.');
+            String ext = f.getName().substring(i+1);
+            if (!ext.equals("config")) {
+                JOptionPane.showMessageDialog(finestra,"Estensione del file non supportata");
+            }
+            else {
+                int ng = 0, r = 0, c = 0;
+                boolean dadoSingolo = false, lancioUnico = false, doppioSei = false,
+                        caselleSosta = false, casellePremio = false, pescaCarta = false, ulterioriCarte = false,
+                        automatico = false;
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+                while (true) {
+                    try {
+                        String line = in.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        String[] entry = line.trim().split(":");
+                        switch (entry[0]) {
+                            case "Configurazione {", "}" -> {}
+                            case "numGiocatori" -> {
+                                ng = Integer.parseInt(entry[1]);
+                            }
+                            case "numRighe" -> {
+                                r = Integer.parseInt(entry[1]);
+                            }
+                            case "numColonne" -> {
+                                c = Integer.parseInt(entry[1]);
+                            }
+                            case "dadoSingolo" -> {
+                                dadoSingolo = entry[1].equals("true");
+                            }
+                            case "lancioUnico" -> {
+                                lancioUnico = entry[1].equals("true");
+                            }
+                            case "doppioSei" -> {
+                                doppioSei = entry[1].equals("true");
+                            }
+                            case "caselleSosta" -> {
+                                caselleSosta = entry[1].equals("true");
+                            }
+                            case "casellePremio" -> {
+                                casellePremio = entry[1].equals("true");
+                            }
+                            case "pescaCarta" -> {
+                                pescaCarta = entry[1].equals("true");
+                            }
+                            case "ulterioriCarte" -> {
+                                ulterioriCarte = entry[1].equals("true");
+                            }
+                            case "automatico" -> {
+                                automatico = entry[1].equals("true");
+                            }
+                            default -> throw new IllegalArgumentException();
+                        }
+                    } catch (IOException e) {
+                        break;
+                    }
+                }
+                return new Configurazione(ng,r,c,dadoSingolo,lancioUnico,doppioSei,caselleSosta,casellePremio,pescaCarta,ulterioriCarte,automatico);
+            }
+        }
+        return null;
+    }
+
+    private boolean configurazioneCorretta(Configurazione conf) {
+        if (conf.getNumGiocatori() < 2 || conf.getNumGiocatori() > 12 ||
+                conf.getRighe() < 5 || conf.getRighe() > 10 ||
+                conf.getColonne() < 5 || conf.getColonne() > 10) {
+            return false;
+        }
+        if (conf.isDadoSingolo() && (conf.isLancioUnico() || conf.isDoppioSei())) {
+            return false;
+        }
+        return conf.isPescaCarta() || !conf.isUlterioriCarte();
+    }
+
+    private void save(File f) {
+        try {
+            PrintWriter out = new PrintWriter(new FileOutputStream(f),true);
+
+            out.println("Configurazione {");
+            out.println("\tnumGiocatori:"+conf.getNumGiocatori());
+            out.println("\tnumRighe:"+conf.getRighe());
+            out.println("\tnumColonne:"+conf.getColonne());
+            out.println("\tdadoSingolo:"+conf.isDadoSingolo());
+            out.println("\tlancioUnico:"+conf.isLancioUnico());
+            out.println("\tdoppioSei:"+conf.isDoppioSei());
+            out.println("\tcaselleSosta:"+conf.isCaselleSosta());
+            out.println("\tcasellePremio:"+conf.isCasellePremio());
+            out.println("\tpescaCarta:"+conf.isPescaCarta());
+            out.println("\tulterioriCarte:"+conf.isUlterioriCarte());
+            out.println("\tautomatico:"+conf.isAutomatico());
+            out.println("}");
+
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     //classe di utilità per implementare il placeholder dei JTextField

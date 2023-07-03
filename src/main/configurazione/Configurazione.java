@@ -80,7 +80,7 @@ public class Configurazione {
                 ", casellePremio=" + casellePremio +
                 ", pescaCarta=" + pescaCarta +
                 ", ulterioriCarte=" + ulterioriCarte +
-                ", automatic=" + automatico +
+                ", automatico=" + automatico +
                 '}';
     }
 }

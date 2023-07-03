@@ -12,7 +12,6 @@ import main.observer.subject.LabelsButtonSubject;
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 public class GameSimulation {
     private Configurazione conf;
