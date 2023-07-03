@@ -34,7 +34,12 @@ public class GameSimulation {
         conf = o1.getConf();
         tabellone = new Tabellone(conf);
         tabellone.init();
-        LabelsButtonSubject roll = new LabelsButtonSubject(new JButton("Tira il dado"));
+        LabelsButtonSubject roll = new LabelsButtonSubject(new JButton());
+        if (tabellone.getConf().isDadoSingolo()) {
+            roll.getSubject().setText("Tira il dado");
+        } else {
+            roll.getSubject().setText("Tira i dadi");
+        }
         FinestraPrincipale fp = new FinestraPrincipale(tabellone,roll);
         fp.init();
         LabelsObserver o2 = new LabelsObserver(roll);
