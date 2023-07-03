@@ -9,15 +9,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.concurrent.Semaphore;
 
 public class FinestraConfigurazione {
     private JFrame finestra;
     private Configurazione conf;
 
     private ConfigurationButtonSubject submit;
+    private Semaphore mutex;
 
-    public FinestraConfigurazione(ConfigurationButtonSubject submit) {
+    public FinestraConfigurazione(ConfigurationButtonSubject submit, Semaphore mutex) {
         this.submit = submit;
+        this.mutex = mutex;
     }
 
     private final String PLACEHOLDER1 = "(max=12, default=2)", PLACEHOLDER2 = "(min=5, max=10, default=10)";
@@ -140,6 +143,7 @@ public class FinestraConfigurazione {
                     );
                     submit.setConf(conf);
                     submit.notifica();
+                    mutex.release();
                     finestra.dispose();
                 }
             } catch (NumberFormatException ex) {

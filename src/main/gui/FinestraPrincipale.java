@@ -12,8 +12,8 @@ import main.state_singleton.Panchina;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 public class FinestraPrincipale {
     enum Colore {GIALLO, BIANCO, ROSSO, BLU, VERDE, ARANCIO, VIOLA, CIANO, ROSA, NERO, GRIGIO_C, GRIGIO_S }
@@ -26,12 +26,14 @@ public class FinestraPrincipale {
     private Tabellone tabellone;
     private int r,c;
     private LabelsButtonSubject roll;
+    private Semaphore mutex;
 
-    public FinestraPrincipale(Tabellone tabellone, LabelsButtonSubject roll) {
+    public FinestraPrincipale(Tabellone tabellone, LabelsButtonSubject roll, Semaphore mutex) {
         this.tabellone = tabellone;
         r = tabellone.getN();
         c = tabellone.getM();
         this.roll = roll;
+        this.mutex = mutex;
     }
 
     public void init() {
@@ -61,6 +63,9 @@ public class FinestraPrincipale {
         Label estrazione = new Label("ultimo numero estratto: ");
         //LabelsButtonSubject roll = new LabelsButtonSubject(new JButton("Tira il dado"));
         roll.setLabels(new Label[]{turnoDi,estrazione});
+        roll.getSubject().addActionListener(e -> {
+            mutex.release();
+        });
 
         JPanel south = new JPanel(new FlowLayout());
         south.add(turnoDi);

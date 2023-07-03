@@ -11,6 +11,7 @@ import main.observer.subject.LabelsButtonSubject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class GameSimulation {
@@ -20,15 +21,16 @@ public class GameSimulation {
     public void start() {
         //TODO: finestra inziale in cui poter caricare una partita
         ConfigurationButtonSubject submit = new ConfigurationButtonSubject(new JButton("Submit"));
-        FinestraConfigurazione fc = new FinestraConfigurazione(submit);
+        Semaphore mutexConf = new Semaphore(0); //per la sincronizzazione
+        FinestraConfigurazione fc = new FinestraConfigurazione(submit,mutexConf);
         fc.init();
         ConfigurationObserver o1 = new ConfigurationObserver(submit);
         submit.attach(o1);
-        while (o1.getState() == ButtonObserver.State.NOT_PRESSED) {
+        if (o1.getState() == ButtonObserver.State.NOT_PRESSED) {
             try {
-                TimeUnit.MILLISECONDS.sleep(1);
-            } catch (Exception e) {
-                System.out.println(o1.getState());
+                mutexConf.acquire();
+            } catch (InterruptedException e) {
+                System.out.println("Interruzione indesiderata");
             }
         }
         conf = o1.getConf();
@@ -40,7 +42,8 @@ public class GameSimulation {
         } else {
             roll.getSubject().setText("Tira i dadi");
         }
-        FinestraPrincipale fp = new FinestraPrincipale(tabellone,roll);
+        Semaphore mutexMain = new Semaphore(0); //per la sincronizzazione
+        FinestraPrincipale fp = new FinestraPrincipale(tabellone,roll,mutexMain);
         fp.init();
         LabelsObserver o2 = new LabelsObserver(roll);
         roll.attach(o2);
@@ -52,11 +55,11 @@ public class GameSimulation {
             else {
                 for (int i=0; i<tabellone.getNumGiocatori(); i++) {
                     Giocatore cur = tabellone.getGiocatori()[i];
-                    while (o2.getState() != ButtonObserver.State.PRESSED) {
+                    if (o2.getState() == ButtonObserver.State.NOT_PRESSED) {
                         try {
-                            TimeUnit.MILLISECONDS.sleep(100);
-                        } catch (Exception e) {
-                            System.out.println(o1.getState());
+                            mutexMain.acquire();
+                        } catch (InterruptedException e) {
+                            System.out.println("Interruzione indesiderata");
                         }
                     }
                     int lancio = calcolaLancio(cur);
