@@ -1,6 +1,6 @@
 package main.gui;
 
-import main.Tabellone;
+
 import main.configurazione.Configurazione;
 import main.mediator.Mediator;
 import main.observer.subject.ConfigurationButtonSubject;
@@ -42,17 +42,13 @@ public class FinestraConfigurazione {
             try {
                 if (chooser.showOpenDialog(finestra) == JFileChooser.APPROVE_OPTION) {
                     File configurazione = chooser.getSelectedFile();
-                    try {
-                        conf = getConfigurazione(configurazione);
-                        if (configurazioneCorretta(conf)) {
-                            submit.setConf(conf);
-                            submit.notifica();
-                            mutex.release();
-                            finestra.dispose();
-                        } else throw new IllegalArgumentException();
-                    } catch (IllegalArgumentException ex) {
-                        JOptionPane.showMessageDialog(finestra,"Il file non rappresenta una configurazione valida");
-                    }
+                    conf = getConfigurazione(configurazione);
+                    if (conf != null && configurazioneCorretta(conf)) {
+                        submit.setConf(conf);
+                        submit.notifica();
+                        mutex.release();
+                        finestra.dispose();
+                    } else JOptionPane.showMessageDialog(finestra,"Il file non rappresenta una configurazione valida");
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -61,6 +57,9 @@ public class FinestraConfigurazione {
         JMenuItem salva = new JMenuItem("Salva");
         JMenuItem salvaConNome = new JMenuItem("Salva con nome");
         JMenuItem esci = new JMenuItem("Esci");
+        esci.addActionListener(e -> {
+            finestra.dispatchEvent(new WindowEvent(finestra,WindowEvent.WINDOW_CLOSING));
+        });
 
         file.add(apri);
         file.add(salva);
@@ -71,7 +70,22 @@ public class FinestraConfigurazione {
         JMenu help = new JMenu("Help");
 
         JMenuItem cosaFare = new JMenuItem("Cosa fare?");
+        cosaFare.addActionListener(e -> {
+            String msg = "Utilizzare i pulsanti per definire la configurazione di questa partita.\n";
+            msg += "In alternativa si può scegliere di:";
+            msg += "\n    -caricare una configurazione (file .config) da filesystem";
+            msg += "\n    -salvare o salvare con nome la configurazione corrente sul filesystem";
+            JOptionPane.showMessageDialog(finestra,msg,"Scelta dell Configurazione della partita",JOptionPane.INFORMATION_MESSAGE);
+        });
         JMenuItem about = new JMenuItem("About");
+        about.addActionListener(e -> {
+            String msg = "Autore del progetto: Gianmarco La Marca\n";
+            msg += "matricola: 220465\n";
+            msg += "GitHub per il codice sorgente: GLAwasTaken\n\n";
+            msg += "La proprietà intellettuale del gioco non appartiene all'autore\n";
+            msg += "Grazie per aver giocato";
+            JOptionPane.showMessageDialog(finestra,msg);
+        });
 
         help.add(cosaFare);
         help.add(about);
@@ -108,7 +122,7 @@ public class FinestraConfigurazione {
 
         JCheckBox automatico = new JCheckBox("avanzamento automatico");
 
-        //TODO: aggiungere un ActionListener per ogni JMenuItem
+        //gli action listener vanno aggiunti dopo l'istanziazione dei JCheckBox
         salva.addActionListener(e -> {
             conf = buildConfigurazione(
                     numGiocatori,righe,colonne,
@@ -171,7 +185,11 @@ public class FinestraConfigurazione {
                     if (!ext.equals("config")) {
                         JOptionPane.showMessageDialog(finestra,"Estensione non compatibile");
                     } else {
-                        save(output);
+                        if (!output.exists()) {
+                            save(output);
+                        } else {
+                            JOptionPane.showMessageDialog(finestra,"Esiste già un file con questo nome nella cartella");
+                        }
                     }
                 } else {
                     JOptionPane.showMessageDialog(finestra,"Nessun Salvataggio");
@@ -347,6 +365,7 @@ public class FinestraConfigurazione {
         return null;
     }
 
+    //serve per controllare la correttezza di una configurazione caricata da filesystem
     private boolean configurazioneCorretta(Configurazione conf) {
         if (conf.getNumGiocatori() < 2 || conf.getNumGiocatori() > 12 ||
                 conf.getRighe() < 5 || conf.getRighe() > 10 ||
@@ -420,8 +439,4 @@ public class FinestraConfigurazione {
         return JOptionPane.showConfirmDialog(finestra,msg,title,JOptionPane.YES_NO_OPTION);
     }
 
-    public static void main(String[] args) {
-        //FinestraConfigurazione f = new FinestraConfigurazione();
-        //f.init();
-    }
 }
