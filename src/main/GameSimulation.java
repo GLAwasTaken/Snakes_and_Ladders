@@ -18,7 +18,6 @@ public class GameSimulation {
     private Tabellone tabellone;
 
     public void start() {
-        //TODO: finestra inziale in cui poter caricare una partita
         ConfigurationButtonSubject submit = new ConfigurationButtonSubject(new JButton("Submit"));
         Semaphore mutexConf = new Semaphore(0); //per la sincronizzazione
         FinestraConfigurazione fc = new FinestraConfigurazione(submit,mutexConf);
@@ -35,23 +34,28 @@ public class GameSimulation {
         conf = o1.getConf();
         tabellone = new Tabellone(conf);
         tabellone.init();
-        LabelsButtonSubject roll = new LabelsButtonSubject(new JButton());
-        if (tabellone.getConf().isDadoSingolo()) {
-            roll.getSubject().setText("Tira il dado");
-        } else {
-            roll.getSubject().setText("Tira i dadi");
-        }
-        Semaphore mutexMain = new Semaphore(0); //per la sincronizzazione
-        FinestraPrincipale fp = new FinestraPrincipale(tabellone,roll,mutexMain);
-        fp.init();
-        LabelsObserver o2 = new LabelsObserver(roll);
-        roll.attach(o2);
         Giocatore vincitore;
         boolean running = true;
-        while (running) {
-            if (conf.isAutomatico()) {
+
+        if (conf.isAutomatico()) {
+            //TODO: implemetare la partita automatica
+            while (running) {
+                running = false;
             }
-            else {
+        }
+        else {
+            LabelsButtonSubject roll = new LabelsButtonSubject(new JButton());
+            if (tabellone.getConf().isDadoSingolo()) {
+                roll.getSubject().setText("Tira il dado");
+            } else {
+                roll.getSubject().setText("Tira i dadi");
+            }
+            Semaphore mutexMain = new Semaphore(0); //per la sincronizzazione
+            FinestraPrincipale fp = new FinestraPrincipale(tabellone,roll,mutexMain);
+            fp.init();
+            LabelsObserver o2 = new LabelsObserver(roll);
+            roll.attach(o2);
+            while (running) {
                 for (int i=0; i<tabellone.getNumGiocatori(); i++) {
                     Giocatore cur = tabellone.getGiocatori()[i];
                     if (o2.getState() == ButtonObserver.State.NOT_PRESSED) {
@@ -80,12 +84,9 @@ public class GameSimulation {
                         //modifico il testo delle label in base al prossimo giocatore
                         fp.nextTurn(getNewLabels(cur,lancio,o2.getLabels()));
                     }
-                    //salva(t);
-                    if (!running) break;
                 }
             }
         }
-        //TODO: azioni di fine partita (salvataggio della configurazione?)
     }
 
     private int calcolaLancio(Giocatore g) {
