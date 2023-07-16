@@ -12,11 +12,13 @@ import main.state_singleton.Panchina;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class FinestraPrincipale {
-    enum Colore {GIALLO, BIANCO, ROSSO, BLU, VERDE, ARANCIO, VIOLA, CIANO, ROSA, NERO, GRIGIO_C, GRIGIO_S }
+    enum Colore { GIALLO, BIANCO, ROSSO, BLU, VERDE, ARANCIO, VIOLA, CIANO, ROSA, NERO, GRIGIO_C, GRIGIO_S }
     private static final Colore[] COLOR_ROTATION = {Colore.GIALLO,Colore.BIANCO,Colore.ROSSO,Colore.BLU,Colore.VERDE};
     private JFrame finestra;
     private Casella[] caselle;
@@ -39,10 +41,59 @@ public class FinestraPrincipale {
     public void init() {
         finestra = new JFrame();
         finestra.setTitle("Scale e Serpenti");
-        finestra.setBounds(400,100,600,600);
-        finestra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        finestra.setBounds(400,50,600,620);
+        finestra.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         finestra.setLayout(new BorderLayout());
 
+        finestra.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                String msg = "La partita corrente verrà persa per sempre.";
+                String title = "Sicuro di voler uscire?";
+                if (JOptionPane.showConfirmDialog(finestra,msg,title,JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    finestra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                }
+            }
+        });
+
+        JMenuBar menu = new JMenuBar();
+
+        JMenu help = new JMenu("Help");
+
+        JMenuItem cosaFare = new JMenuItem("Cosa Fare?");
+        cosaFare.addActionListener(e -> {
+            String msg = "Benvenuto in partita!\n";
+            msg += "Guardando in basso vedrai in ordine:\n";
+            msg += "    -il turno del giocatore corrente\n";
+            msg += "    -il bottone per tirare "+(tabellone.getConf().isDadoSingolo()?"il dado":"i dadi")+"\n";
+            msg += "    -il numero di caselle che il giocatore precedente ha percorso con l'ultimo tiro\n";
+            msg += "\nSpiegazione del tabellone di gioco:\n";
+            msg += "    -i tubi verdi (bonus) rappresentano le scale\n";
+            msg += "    -i tubi rossi (malus) rappresentano i serpenti\n";
+            msg += "\nSe le hai selezionato nella configurazione, su alcune caselle vedrai delle scritte:\n";
+            msg += "    -PAN = panchina\n";
+            msg += "    -LOC = locanda\n";
+            msg += "    -DAD = dadi\n";
+            msg += "    -MOL = molla\n";
+            msg += "    -PES = pesca\n";
+            msg += "\nDovrebbe essere tutto, buona partita!";
+            JOptionPane.showMessageDialog(finestra,msg);
+        });
+
+        JMenuItem about = new JMenuItem("About");
+        about.addActionListener(e -> {
+            String msg = "Autore del progetto: Gianmarco La Marca\n";
+            msg += "matricola: 220465\n";
+            msg += "GitHub per il codice sorgente: GLAwasTaken\n\n";
+            msg += "La proprietà intellettuale del gioco non appartiene all'autore\n";
+            msg += "Grazie per aver giocato";
+            JOptionPane.showMessageDialog(finestra,msg);
+        });
+
+        help.add(cosaFare);
+        help.add(about);
+
+        menu.add(help);
 
         caselle = new Casella[(r*c)+1]; //lascio la prima posizione vuota per avere corrispondenza di indici
         pedine = new ArrayList<>(tabellone.getNumGiocatori());
@@ -58,10 +109,9 @@ public class FinestraPrincipale {
         generateSL(center);
         center.add(grid);
 
-
         Label turnoDi = new Label("E' il turno di p1");
         Label estrazione = new Label("ultimo numero estratto: ");
-        //LabelsButtonSubject roll = new LabelsButtonSubject(new JButton("Tira il dado"));
+
         roll.setLabels(new Label[]{turnoDi,estrazione});
         roll.getSubject().addActionListener(e -> {
             mutex.release();
@@ -72,6 +122,7 @@ public class FinestraPrincipale {
         south.add(roll.getSubject());
         south.add(estrazione);
 
+        finestra.add(menu,BorderLayout.NORTH);
         finestra.add(center,BorderLayout.CENTER);
         finestra.add(south,BorderLayout.SOUTH);
         finestra.setVisible(true);
@@ -86,11 +137,11 @@ public class FinestraPrincipale {
         for (int i = 0; i<r; i++) {
             k = (k+3)%COLOR_ROTATION.length;
             boolean verso; //true (-->), false (<--)
-            //scegliamo il verso di ogni riga in base al valore dell'ultima riga (quella da cui iniziamo)
-            if ((r-1)%2 == 0) {
-                verso = i%2 == 0;
-            } else {
+            //scegliamo il verso di ogni riga in base al numero di righe totali (dato che iniziamo da quella più in alto)
+            if (r%2 == 0) {
                 verso = i%2 != 0;
+            } else {
+                verso = i%2 == 0;
             }
             for (int j = 0; j<c; j++) {
                 Casella casella;
@@ -107,10 +158,10 @@ public class FinestraPrincipale {
                 }
             }
             if (!verso) {
-                id-=c-1;
+                id -= c-1;
             }
             else {
-                id-=c+1;
+                id -= c+1;
             } //per far ricominciare il conteggio dalla casella sotto
         }
     }
@@ -227,6 +278,7 @@ public class FinestraPrincipale {
 
         Posizione pos = c.getPos(); //nuova posizione di p
 
+        //TODO: spostare l'azione di muovere ed i controlli in Game Simulation
         tabellone.move(giocatore,c.getId(),pos);
 
         controlloScala(giocatore,pos);
@@ -424,7 +476,7 @@ public class FinestraPrincipale {
         finestra.dispose();
     }
 
-    class Casella extends JPanel{
+    class Casella extends JPanel {
         private int id;
         private Colore colore;
         private Posizione pos; //associo ad ogni casella la posizione nella matrice (board)
