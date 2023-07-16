@@ -1,7 +1,6 @@
 package main;
 
 import main.caselle_speciali.CasellaSpeciale;
-import main.collegamento.Collegamento;
 import main.collegamento.Posizione;
 import main.collegamento.Scala;
 import main.collegamento.Serpente;
@@ -52,12 +51,10 @@ public class Tabellone {
             Posizione[] pos = generateSL();
             Scala sc = new Scala(num_prog1,pos[0],pos[1]);
             num_prog1+=2;
-            System.out.println(sc);
             scale[i] = sc;
             pos = generateSL();
             Serpente se = new Serpente(num_prog2,pos[0],pos[1]);
             num_prog2+=2;
-            System.out.println(se);
             serpenti[i] = se;
         }
         if (conf.isCasellePremio()) {
@@ -101,40 +98,6 @@ public class Tabellone {
                 caselleSpeciali.get(t)[i] = speciale;
             }
         }
-        /*
-        for (CasellaSpeciale.Tipo t: CasellaSpeciale.Tipo.values()) {
-            for (int i = 0; i < numSpeciali; i++) {
-                Posizione pos = generateSpeciali();
-                CasellaSpeciale speciale = new CasellaSpeciale(t,pos);
-                caselleSpeciali.get(t)[i] = speciale;
-            }
-        }
-        /*
-        FinestraPrincipale f = new FinestraPrincipale(this);
-        Thread t = new Thread(() -> {
-            f.init();
-            try {
-                TimeUnit.SECONDS.sleep(3);
-                System.out.println("MUOVI!");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            f.move(1,5);
-            try {
-                TimeUnit.SECONDS.sleep(3);
-                System.out.println("MUOVI!");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            f.move(0,3);
-        });
-        t.start();
-
-        System.out.println("Scale = "+Arrays.toString(scale));
-        System.out.println("Serpenti = "+Arrays.toString(serpenti));
-        print();
-
-         */
     }
 
     private Posizione[] generateSL() {
@@ -174,49 +137,6 @@ public class Tabellone {
             }
         }
         return ris;
-    }
-
-    private void print() {
-        Collegamento[][] c = new Collegamento[n][m];
-        for (int i = 0; i<n; i++) {
-            for (int j = 0; j<m; j++) {
-                boolean trovato = false;
-                for (Scala s:scale) {
-                    if (s.getTop().getX() == i && s.getTop().getY() == j ||
-                        s.getBottom().getX() == i && s.getBottom().getY() == j) {
-                            c[i][j] = s;
-                            trovato = true;
-                    }
-                }
-                if (!trovato) {
-                    for (Serpente s:serpenti) {
-                        if (s.getTop().getX() == i && s.getTop().getY() == j ||
-                                s.getBottom().getX() == i && s.getBottom().getY() == j) {
-                            c[i][j] = s;
-                            trovato = true;
-                        }
-                    }
-                }
-            }
-        }
-        for (int i = 0; i<n; i++) {
-            System.out.println("+-------------------+");
-            for (int j = 0; j<m; j++) {
-                if (c[i][j] != null) {
-                    if (c[i][j] instanceof Scala) {
-                        Scala s = (Scala) c[i][j];
-                        System.out.print("|"+s.getId());
-                    } else {
-                        Serpente s = (Serpente) c[i][j];
-                        System.out.print("|"+s.getId());
-                    }
-                } else {
-                    System.out.print("| ");
-                }
-                if (j == m-1) System.out.println("|");
-            }
-        }
-        System.out.println("+-------------------+");
     }
 
     public int[][] getBoard() {
@@ -307,13 +227,4 @@ public class Tabellone {
         return nuovaCasella;
     }
 
-    public static void main(String[] args) {
-        /*
-        Tabellone t = new Tabellone("8","6");
-        t.init();
-        FinestraPrincipale f = new FinestraPrincipale(t);
-        f.init();
-
-         */
-    }
 }
