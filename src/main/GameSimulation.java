@@ -1,7 +1,10 @@
 package main;
 
 import main.caselle_speciali.CasellaSpeciale;
+import main.collegamento.Collegamento;
 import main.collegamento.Posizione;
+import main.collegamento.Scala;
+import main.collegamento.Serpente;
 import main.configurazione.Configurazione;
 import main.gui.FinestraConfigurazione;
 import main.gui.FinestraPrincipale;
@@ -57,6 +60,8 @@ public class GameSimulation {
                     while (running) {
                         for (int i = 0; i<tabellone.getNumGiocatori(); i++) {
                             Giocatore cur = tabellone.getGiocatori()[i];
+
+                            int oldCasella = cur.getCasella();
                             out.println("Turno di p"+(cur.getId()+1));
                             int lancio = calcolaLancio(cur);
                             int casella = Tabellone.validaCasella(cur.getCasella(),lancio,tabellone.getN()*tabellone.getM());
@@ -64,26 +69,42 @@ public class GameSimulation {
                                 lancio = calcolaLancio(cur);
                                 casella = Tabellone.validaCasella(cur.getCasella(),lancio,tabellone.getN()*tabellone.getM());
                             }
-                            Posizione newPos = getNewPos(cur.getPos(),lancio);
+                            out.println("Numero estratto: "+lancio);
+                            out.println("Il giocatore p"+(cur.getId()+1)+" si muove da "+oldCasella+" a "+casella+"\n");
+
+                            Posizione newPos = getPos(casella);
+                            System.out.println(newPos);
                             tabellone.move(cur.getId(),casella,newPos);
-                            out.println("Il giocatore p"+(cur.getId()+1)+" si muove da "+cur.getCasella()+" a "+casella+"\n");
 
                             //TODO: controlli sulla nuova posizione
+                            for (Scala s:tabellone.getScale()) {
+                                if (s.getBottom().equals(newPos)) {
+                                    out.println("Il giocatore p"+(cur.getId()+1)+" è finito su una SCALA\n");
+                                    //TODO muovere il giocatore
+                                }
+                            }
+                            for (Serpente s: tabellone.getSerpenti()) {
+                                if (s.getTop().equals(newPos)) {
+                                    out.println("Il giocatore p"+(cur.getId()+1)+" è finito su un SERPENTE\n");
+                                    //TODO muovere il giocatore
+                                }
+                            }
 
-                            /*
                             for (CasellaSpeciale.Tipo t:tabellone.getCaselleSpeciali().keySet()) {
                                 for (CasellaSpeciale c:tabellone.getCaselleSpeciali().get(t)) {
-                                    if (cur.getPos().equals(c.getPos())) {
+                                    System.out.println(c.getPos()+" "+newPos);
+                                    if (c.getPos().equals(newPos)) {
                                         out.println("Il giocatore p"+(cur.getId()+1)+" è finito su "+t.name()+"\n");
-
+                                        //performAction(t);
                                     }
                                 }
                             }
-                             */
+
                             if (hasWon(cur)) {
                                 vincitore = cur;
                                 running = false;
                                 out.println("Il giocatore p"+(vincitore.getId()+1)+" ha vinto");
+                                break;
                             }
                         }
                     }
@@ -168,60 +189,38 @@ public class GameSimulation {
         return new String[]{l1,l2};
     }
 
-    private Posizione getNewPos(Posizione attuale, int lancio) {
-        if (attuale.getY() + lancio < tabellone.getM()) {
-            return new Posizione(attuale.getX(),attuale.getY()+lancio);
+    private Posizione getPos(int casella) {
+        int id = tabellone.getN()* tabellone.getM();
+        if ((tabellone.getN()-1)%2 == 0) {
+            id -=  tabellone.getM()-1;
         }
-        else { //il lancio ci ha fatti uscire dalla riga corrente
-            int x = 0, y = 0;
-
-            boolean verso; //verso di percorrenza della riga attuale: true (--->), false (<---)
+        for (int i = 0; i<tabellone.getN(); i++) {
+            boolean verso; //true (-->), false (<--)
+            //scegliamo il verso di ogni riga in base al numero di righe totali (dato che iniziamo da quella più in alto)
             if (tabellone.getN() % 2 == 0) {
-                verso = attuale.getX()%2 != 0;
+                verso = i % 2 != 0;
             } else {
-                verso = attuale.getY()%2 == 0;
+                verso = i % 2 == 0;
             }
-
-            int eccesso = attuale.getY() + lancio - (tabellone.getM()-1);
-
-            if (attuale.getX() == tabellone.getN()-1) { //devo tornare indietro sulla stessa riga
-                return fallBack(attuale,eccesso);
-            }
-            else { //devo salire di una riga
-                x = attuale.getX()+1;
-                verso = !verso; //dato che avanzo nella riga successiva adattare il verso di percorrenza
+            for (int j = 0; j< tabellone.getM(); j++) {
+                if (id == casella) {
+                    System.out.println("Casella "+id);
+                    return new Posizione(i,j);
+                }
                 if (verso) {
-                    return getNewPos(new Posizione(x,0),eccesso);
+                    id++;
                 } else {
-                    return getNewPos(new Posizione(x, tabellone.getM()-1),eccesso);
+                    id--;
                 }
             }
-        }
-    }
-
-    private Posizione fallBack(Posizione attuale, int fallBack) {
-        boolean verso; //verso di percorrenza della riga attuale: true (--->), false (<---)
-        if (tabellone.getN() % 2 == 0) {
-            verso = attuale.getX()%2 != 0;
-        } else {
-            verso = attuale.getY()%2 == 0;
-        }
-
-        if (verso) {
-            if ((tabellone.getM()-1) - fallBack >= 0) {
-                return new Posizione(attuale.getX(),attuale.getY()-fallBack);
-            } else {
-                int residuo = fallBack - (tabellone.getM()-1);
-                return fallBack(new Posizione(attuale.getX()-1,0),residuo);
+            if (!verso) {
+                id -=  tabellone.getM()-1;
             }
-        } else {
-            if (fallBack < tabellone.getM()) {
-                return new Posizione(attuale.getX(),attuale.getY()+fallBack);
-            } else {
-                int residuo = fallBack - (tabellone.getM()-1);
-                return fallBack(new Posizione(attuale.getX()-1, tabellone.getM()-1),residuo);
-            }
+            else {
+                id -=  tabellone.getM()+1;
+            } //per far ricominciare il conteggio dalla casella sotto
         }
+        return null;
     }
 
     public static void main(String[] args) {

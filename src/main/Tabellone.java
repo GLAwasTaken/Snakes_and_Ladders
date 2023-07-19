@@ -49,10 +49,12 @@ public class Tabellone {
         int num_prog1=0, num_prog2=1;
         for (int i = 0; i<numCollegamenti; i++) {
             Posizione[] pos = generateSL();
+            System.out.println("Scala: "+pos[1]);
             Scala sc = new Scala(num_prog1,pos[0],pos[1]);
             num_prog1+=2;
             scale[i] = sc;
             pos = generateSL();
+            System.out.println("Serpente: "+pos[0]);
             Serpente se = new Serpente(num_prog2,pos[0],pos[1]);
             num_prog2+=2;
             serpenti[i] = se;
