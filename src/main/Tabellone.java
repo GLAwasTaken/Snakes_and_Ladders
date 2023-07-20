@@ -32,6 +32,9 @@ public class Tabellone {
     }
 
     public void init() {
+        for (int i = 0; i<numGiocatori; i++) {
+            giocatori[i] = new Giocatore(i);
+        }
         int num_prog1=0, num_prog2=1;
         for (int i = 0; i<numCollegamenti; i++) {
             Posizione[] pos = generateSL();
@@ -136,7 +139,6 @@ public class Tabellone {
         if (target == null || pos.getX() >= n || pos.getY() >= m) {
             throw new IllegalArgumentException();
         }
-        Posizione cur = target.getPos();
         target.setPos(pos);
         target.setCasella(casella);
     }

@@ -147,6 +147,7 @@ public class GameSimulation {
                         running = false;
                         System.out.println("Il giocatore p"+(vincitore.getId()+1)+" ha vinto");
                         fp.mostraVincitore(cur);
+                        break;
                     }
                     else {
                         //modifico il testo delle label in base al prossimo giocatore
