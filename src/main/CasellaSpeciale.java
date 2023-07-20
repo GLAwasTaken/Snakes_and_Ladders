@@ -1,4 +1,4 @@
-package main.caselle_speciali;
+package main;
 
 import main.collegamento.Posizione;
 
@@ -7,22 +7,14 @@ public class CasellaSpeciale {
 
     private final Tipo tipo;
 
-    private Posizione pos;
+    private final Posizione pos;
 
     public CasellaSpeciale(Tipo tipo, Posizione pos) {
         this.tipo = tipo;
         this.pos = pos;
     }
 
-    public Tipo getTipo() {
-        return tipo;
-    }
-
     public Posizione getPos() {
         return pos;
-    }
-
-    public void setPos(Posizione pos) {
-        this.pos = pos;
     }
 }

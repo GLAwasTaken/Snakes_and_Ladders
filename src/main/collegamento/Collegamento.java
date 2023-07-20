@@ -5,8 +5,6 @@ import main.Giocatore;
 public abstract class Collegamento {
     protected Posizione top, bottom;
 
-    public abstract void percorri(Giocatore g);
-
     public Posizione getTop() {
         return top;
     }

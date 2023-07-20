@@ -1,10 +1,8 @@
 package main;
 
-import main.caselle_speciali.CasellaSpeciale;
 import main.collegamento.Posizione;
 import main.collegamento.Scala;
 import main.collegamento.Serpente;
-import main.configurazione.Configurazione;
 import main.gui.FinestraConfigurazione;
 import main.gui.FinestraPrincipale;
 import main.observer.ButtonObserver;
@@ -283,7 +281,6 @@ public class GameSimulation {
         if (!trovato) {
             for (CasellaSpeciale.Tipo t : tabellone.getCaselleSpeciali().keySet()) {
                 for (CasellaSpeciale c : tabellone.getCaselleSpeciali().get(t)) {
-                    System.out.println(c.getPos() + " " + newPos);
                     if (c.getPos().equals(newPos)) {
                         out.println("Il giocatore p" + (cur.getId() + 1) + " è finito su " + t.name() + "\n");
                         performAction(t, cur, lancio, out);

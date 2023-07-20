@@ -1,7 +1,7 @@
 package main.gui;
 
 
-import main.configurazione.Configurazione;
+import main.Configurazione;
 import main.mediator.Mediator;
 import main.observer.subject.ConfigurationButtonSubject;
 
@@ -75,7 +75,7 @@ public class FinestraConfigurazione {
             msg += "In alternativa si può scegliere di:";
             msg += "\n    -caricare una configurazione (file .config) da filesystem";
             msg += "\n    -salvare o salvare con nome la configurazione corrente sul filesystem";
-            JOptionPane.showMessageDialog(finestra,msg,"Scelta dell Configurazione della partita",JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(finestra,msg,"Scelta della Configurazione della partita",JOptionPane.INFORMATION_MESSAGE);
         });
         JMenuItem about = new JMenuItem("About");
         about.addActionListener(e -> {
@@ -197,7 +197,6 @@ public class FinestraConfigurazione {
             }
         });
 
-        //ConfigurationButtonSubject submit = new ConfigurationButtonSubject(new JButton("Submit"));
         submit.getSubject().addActionListener(e -> {
             try {
                 int conferma = conferma();

@@ -1,6 +1,6 @@
 package main.observer;
 
-import main.configurazione.Configurazione;
+import main.Configurazione;
 import main.observer.subject.ConfigurationButtonSubject;
 
 public class ConfigurationObserver extends ButtonObserver {

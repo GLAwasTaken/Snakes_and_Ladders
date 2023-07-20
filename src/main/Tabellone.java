@@ -1,18 +1,15 @@
 package main;
 
-import main.caselle_speciali.CasellaSpeciale;
 import main.collegamento.Posizione;
 import main.collegamento.Scala;
 import main.collegamento.Serpente;
-import main.configurazione.Configurazione;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class Tabellone {
-    private static final double RATE = 0.08;
+    private static final double RATE = 0.08; //rateo di generazione di scale/serpenti/caselle speciali rispetto alle dimensioni della matrice
     private final Configurazione conf;
-    private int[][] board;
     private boolean[][] collegamentiSpeciali;
     private final int n,m,numCollegamenti,numGiocatori,numSpeciali;
     private Serpente[] serpenti;
@@ -27,7 +24,6 @@ public class Tabellone {
         numCollegamenti = (int) Math.rint((n*m)*RATE);
         numGiocatori = conf.getNumGiocatori();
         numSpeciali = numCollegamenti-2;
-        board = new int[n][m];
         collegamentiSpeciali = new boolean[n][m];
         serpenti = new Serpente[numCollegamenti];
         scale = new Scala[numCollegamenti];
@@ -36,25 +32,13 @@ public class Tabellone {
     }
 
     public void init() {
-        for (int i = 0; i<n; i++) {
-            for (int j = 0; j<m; j++) {
-                board[i][j] = 0;
-                collegamentiSpeciali[i][j] = false;
-            }
-        }
-        for (int i = 0; i<numGiocatori; i++) {
-            giocatori[i] = new Giocatore(i);
-            board[0][0] += 1; //tutti i giocatori sulla posizione iniziale
-        }
         int num_prog1=0, num_prog2=1;
         for (int i = 0; i<numCollegamenti; i++) {
             Posizione[] pos = generateSL();
-            System.out.println("Scala: "+pos[1]);
             Scala sc = new Scala(num_prog1,pos[0],pos[1]);
             num_prog1+=2;
             scale[i] = sc;
             pos = generateSL();
-            System.out.println("Serpente: "+pos[0]);
             Serpente se = new Serpente(num_prog2,pos[0],pos[1]);
             num_prog2+=2;
             serpenti[i] = se;
@@ -141,14 +125,6 @@ public class Tabellone {
         return ris;
     }
 
-    public int[][] getBoard() {
-        int[][] ris = new int[n][m];
-        for (int i = 0; i<n; i++) {
-            System.arraycopy(board[i],0,ris[i],0,m);
-        }
-        return ris;
-    }
-
     public void move(int giocatore, int casella, Posizione pos) {
         Giocatore target = null;
         for (Giocatore g:giocatori) {
@@ -161,22 +137,12 @@ public class Tabellone {
             throw new IllegalArgumentException();
         }
         Posizione cur = target.getPos();
-        board[cur.getX()][cur.getY()] -= 1; //tolgo un giocatore da quella posizione
         target.setPos(pos);
         target.setCasella(casella);
-        board[pos.getX()][pos.getY()] += 1; //aggiungo un giocatore nella nuova posizione
     }
 
     public Configurazione getConf() {
         return conf;
-    }
-
-    public boolean[][] getCollegamenti() {
-        boolean[][] ris = new boolean[n][m];
-        for (int i = 0; i<n; i++) {
-            System.arraycopy(collegamentiSpeciali[i],0,ris[i],0,m);
-        }
-        return ris;
     }
 
     public int getN() {
@@ -193,10 +159,6 @@ public class Tabellone {
 
     public int getNumCollegamenti() {
         return numCollegamenti;
-    }
-
-    public int getNumSpeciali() {
-        return numSpeciali;
     }
 
     public Giocatore[] getGiocatori() {

@@ -2,7 +2,6 @@ package main.state_singleton;
 
 import main.Giocatore;
 
-//TODO AGGIUSTARE PANCHINA O LOCANDA
 public enum Panchina implements State {
     INSTANCE;
 
@@ -15,10 +14,5 @@ public enum Panchina implements State {
         }
         g.setStato(Normale.INSTANCE);
         return false;
-    }
-
-    @Override
-    public Premio handlePremioReq(Giocatore g) {
-        return Premio.NESSUNO;
     }
 }

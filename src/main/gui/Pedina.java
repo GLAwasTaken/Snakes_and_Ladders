@@ -7,7 +7,7 @@ public class Pedina extends JPanel {
     private static final FinestraPrincipale.Colore[] PEDINE = {FinestraPrincipale.Colore.GIALLO, FinestraPrincipale.Colore.BIANCO, FinestraPrincipale.Colore.ROSSO, FinestraPrincipale.Colore.BLU, FinestraPrincipale.Colore.VERDE,
             FinestraPrincipale.Colore.ARANCIO, FinestraPrincipale.Colore.VIOLA, FinestraPrincipale.Colore.CIANO, FinestraPrincipale.Colore.ROSA,
             FinestraPrincipale.Colore.NERO, FinestraPrincipale.Colore.GRIGIO_C, FinestraPrincipale.Colore.GRIGIO_S};
-    private int id;
+    private final int id;
     private FinestraPrincipale.Casella parent;
     private String text;
 

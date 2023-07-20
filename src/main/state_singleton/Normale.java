@@ -10,8 +10,4 @@ public enum Normale implements State {
         return true;
     }
 
-    @Override
-    public Premio handlePremioReq(Giocatore g) {
-        return Premio.NESSUNO;
-    }
 }

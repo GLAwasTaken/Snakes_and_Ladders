@@ -1,4 +1,4 @@
-package main.configurazione;
+package main;
 
 public class Configurazione {
     private final int numGiocatori;

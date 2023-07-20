@@ -1,11 +1,10 @@
 package main.observer.subject;
 
-import main.configurazione.Configurazione;
+import main.Configurazione;
 import main.observer.ButtonObserver;
 import main.observer.ConfigurationObserver;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class ConfigurationButtonSubject extends AbstractButtonSubject {
     private Configurazione conf;

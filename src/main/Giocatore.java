@@ -6,7 +6,7 @@ import main.state_singleton.State;
 
 public class Giocatore {
 
-    private int id;
+    private final int id;
     private Posizione pos;
     private int casella;
     private State stato;
@@ -54,10 +54,6 @@ public class Giocatore {
 
     public boolean sostaReq() {
         return stato.handleSostaReq(this);
-    }
-
-    public State.Premio premioReq() {
-        return stato.handlePremioReq(this);
     }
 
     public void setCasella(int casella) {

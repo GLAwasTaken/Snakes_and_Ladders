@@ -23,9 +23,4 @@ public class Locanda implements State {
         }
         return false;
     }
-
-    @Override
-    public Premio handlePremioReq(Giocatore g) {
-        return Premio.NESSUNO;
-    }
 }

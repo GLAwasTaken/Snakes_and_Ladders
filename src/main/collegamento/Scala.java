@@ -4,7 +4,7 @@ import main.Giocatore;
 
 public class Scala extends Collegamento {
 
-    private int id;
+    private final int id;
 
     public Scala(int id, int cimaX, int cimaY, int baseX, int baseY) {
         if (cimaX <= baseX) {
@@ -26,10 +26,5 @@ public class Scala extends Collegamento {
 
     public int getId() {
         return id;
-    }
-
-    @Override
-    public void percorri(Giocatore g) {
-        g.setPos(top);
     }
 }

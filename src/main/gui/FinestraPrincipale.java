@@ -2,7 +2,7 @@ package main.gui;
 
 import main.Giocatore;
 import main.Tabellone;
-import main.caselle_speciali.CasellaSpeciale;
+import main.CasellaSpeciale;
 import main.collegamento.Posizione;
 import main.collegamento.Scala;
 import main.collegamento.Serpente;
@@ -25,8 +25,8 @@ public class FinestraPrincipale {
     private Ladder[] scale;
     private Snake[] serpenti;
     private ArrayList<Pedina> pedine;
-    private Tabellone tabellone;
-    private int r,c;
+    private final Tabellone tabellone;
+    private final int r,c;
     private LabelsButtonSubject roll;
     private Semaphore mutex;
 
@@ -70,12 +70,12 @@ public class FinestraPrincipale {
             msg += "\nSpiegazione del tabellone di gioco:\n";
             msg += "    -i tubi verdi (bonus) rappresentano le scale\n";
             msg += "    -i tubi rossi (malus) rappresentano i serpenti\n";
-            msg += "\nSe le hai selezionato nella configurazione, su alcune caselle vedrai delle scritte:\n";
-            msg += "    -PAN = panchina\n";
-            msg += "    -LOC = locanda\n";
-            msg += "    -DAD = dadi\n";
-            msg += "    -MOL = molla\n";
-            msg += "    -PES = pesca\n";
+            msg += "\nSe hai selezionato le rispettive scelte nella configurazione, su alcune caselle vedrai delle scritte:\n";
+            msg += "    - PAN = panchina\n";
+            msg += "    - LOC = locanda\n";
+            msg += "    - DAD = dadi\n";
+            msg += "    - MOL = molla\n";
+            msg += "    - PES = pesca\n";
             msg += "\nDovrebbe essere tutto, buona partita!";
             JOptionPane.showMessageDialog(finestra,msg);
         });
@@ -104,9 +104,9 @@ public class FinestraPrincipale {
 
         JPanel grid = new JPanel(new GridLayout(r,c));
         grid.setSize(585,520);
-        generateGrid(grid);
+        generateGrid(grid); //metodo di generazione grafica del tabellone di gioco
 
-        generateSL(center);
+        generateSL(center); //metodo di generazione grafica delle scale e dei serpenti
         center.add(grid);
 
         Label turnoDi = new Label("E' il turno di p1");
@@ -195,53 +195,11 @@ public class FinestraPrincipale {
                 return c;
             }
         }
+        //le caselle ricoprono tutte le posizioni del tabellone, non è possibile arrivare a questo punto del codice
         return null;
     }
 
-    private void riempi(Casella casella) {
-        JLabel num = new JLabel(Integer.toString(casella.getId()));
-        setColor(num,casella);
-        casella.add(num,BorderLayout.SOUTH,0);
-        if (casella.getId() == 1) {
-            for (int i = 0; i<tabellone.getNumGiocatori(); i++) {
-                Pedina pedina = new Pedina(i,casella,"p"+(i+1),
-                        casella.getX(),casella.getY(),casella.getSize().width,casella.getSize().height);
-                pedine.add(pedina);
-            } //ad inizio partita tutti i giocatori si trovano sulla prima casella
-
-            JLabel start = new JLabel("Start -->");
-            setColor(start,casella);
-
-            casella.add(start,BorderLayout.CENTER);
-            for (Pedina p:pedine) {
-                casella.add(p);
-            }
-        } else if (casella.getId() == r*c) {
-            JLabel finish = new JLabel("Finish!");
-            setColor(finish,casella);
-            casella.add(finish,BorderLayout.CENTER);
-        }
-        for (CasellaSpeciale.Tipo t:CasellaSpeciale.Tipo.values()) {
-            CasellaSpeciale[] target = tabellone.getCaselleSpeciali().get(t);
-            if (target != null) {
-                for (CasellaSpeciale speciale:target) {
-                    if (casella.getPos().equals(speciale.getPos())) {
-                        JLabel tipo = new JLabel("    "+t.name().substring(0,3));
-                        setColor(tipo,casella);
-                        casella.add(tipo);
-                    }
-                }
-            }
-        }
-    }
-
-    private void setColor(JLabel target,Casella c) {
-        if (c.getBackground().equals(Color.BLUE) ||
-                c.getBackground().equals(Color.RED)) {
-            target.setForeground(Color.WHITE);
-        }
-    }
-
+    //metodo invocato da GameSimulation per far muovere (graficamente e sul tabellone) i giocatori
     public void move(int giocatore, int casella) {
         Giocatore g = tabellone.getGiocatori()[giocatore];
         if (g.getCasella() == casella) {
@@ -278,7 +236,6 @@ public class FinestraPrincipale {
 
         Posizione pos = c.getPos(); //nuova posizione di p
 
-        //TODO: spostare l'azione di muovere ed i controlli in Game Simulation
         tabellone.move(giocatore,c.getId(),pos);
 
         controlloScala(giocatore,pos);
@@ -309,7 +266,7 @@ public class FinestraPrincipale {
         for (Serpente s:tabellone.getSerpenti()) { //cerco un serpente tale che serpente.bottom=pos
             if (s.getTop().equals(pos)) {
                 System.out.println("SERPENTE!");
-                for (int i = 1; i<(r*c)+1; i++) { //cerco la casella che ha pos=scala.top
+                for (int i = 1; i<(r*c)+1; i++) { //cerco la casella che ha pos=serpente.bottom
                     Casella nuova = caselle[i];
                     if (s.getBottom().equals(nuova.getPos())) {
                         move(giocatore,nuova.getId());
@@ -355,7 +312,7 @@ public class FinestraPrincipale {
         if (tabellone.getConf().isCasellePremio()) {
             CasellaSpeciale[] dadi = tabellone.getCaselleSpeciali().get(CasellaSpeciale.Tipo.DADI);
             for (CasellaSpeciale d:dadi) {
-                if (d.getPos().equals(pos)) {
+                if (d.getPos().equals(pos)) { //sono su una casella dadi
                     actionDadi(giocatore);
                 }
             }
@@ -391,8 +348,7 @@ public class FinestraPrincipale {
             CasellaSpeciale[] molle = tabellone.getCaselleSpeciali().get(CasellaSpeciale.Tipo.MOLLA);
             for (CasellaSpeciale m:molle) {
                 Giocatore g = tabellone.getGiocatori()[giocatore];
-                if (m.getPos().equals(g.getPos())) {
-                    System.out.println("SEI SU UNA MOLLA!");
+                if (m.getPos().equals(g.getPos())) { //sono su una casella molla
                     actionMolla(giocatore,vecchiaPos);
                 }
             }
@@ -422,7 +378,7 @@ public class FinestraPrincipale {
         if (tabellone.getConf().isPescaCarta()) {
             CasellaSpeciale[] pescaCarte = tabellone.getCaselleSpeciali().get(CasellaSpeciale.Tipo.PESCA);
             for (CasellaSpeciale p:pescaCarte) {
-                if (p.getPos().equals(pos)) {
+                if (p.getPos().equals(pos)) { //sono su una casella pesca
                     Giocatore g = tabellone.getGiocatori()[giocatore];
                     int i;
                     if (tabellone.getConf().isUlterioriCarte()) {
@@ -477,9 +433,9 @@ public class FinestraPrincipale {
     }
 
     class Casella extends JPanel {
-        private int id;
-        private Colore colore;
-        private Posizione pos; //associo ad ogni casella la posizione nella matrice (board)
+        private final int id;
+        private final Colore colore;
+        private final Posizione pos; //associo ad ogni casella la posizione nella matrice (board)
         private final int WIDTH = 10, HEIGHT = 10;
 
         public Casella(int id,Colore colore, Posizione pos) {
@@ -509,8 +465,48 @@ public class FinestraPrincipale {
         }
     }
 
-    public static void main(String[] args) {
-        //FinestraPrincipale f = new FinestraPrincipale(t);
-        //f.init();
+    private void riempi(Casella casella) {
+        JLabel num = new JLabel(Integer.toString(casella.getId()));
+        setColor(num,casella);
+        casella.add(num,BorderLayout.SOUTH,0); //mettere un indice seve per l'operazione di aggiornamento
+        if (casella.getId() == 1) {
+            for (int i = 0; i<tabellone.getNumGiocatori(); i++) {
+                Pedina pedina = new Pedina(i,casella,"p"+(i+1),
+                        casella.getX(),casella.getY(),casella.getSize().width,casella.getSize().height);
+                pedine.add(pedina);
+            } //ad inizio partita tutti i giocatori si trovano sulla prima casella
+
+            JLabel start = new JLabel("Start -->");
+            setColor(start,casella);
+
+            casella.add(start,BorderLayout.CENTER);
+            for (Pedina p:pedine) {
+                casella.add(p);
+            }
+        } else if (casella.getId() == r*c) {
+            JLabel finish = new JLabel("Finish!");
+            setColor(finish,casella);
+            casella.add(finish,BorderLayout.CENTER);
+        }
+        for (CasellaSpeciale.Tipo t:CasellaSpeciale.Tipo.values()) {
+            CasellaSpeciale[] target = tabellone.getCaselleSpeciali().get(t);
+            if (target != null) {
+                for (CasellaSpeciale speciale:target) {
+                    if (casella.getPos().equals(speciale.getPos())) {
+                        JLabel tipo = new JLabel("    "+t.name().substring(0,3));
+                        setColor(tipo,casella);
+                        casella.add(tipo);
+                    }
+                }
+            }
+        }
     }
+
+    private void setColor(JLabel target,Casella c) {
+        if (c.getBackground().equals(Color.BLUE) ||
+                c.getBackground().equals(Color.RED)) {
+            target.setForeground(Color.WHITE);
+        }
+    }
+
 }

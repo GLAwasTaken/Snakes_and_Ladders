@@ -3,7 +3,7 @@ package main.collegamento;
 import main.Giocatore;
 
 public class Serpente extends Collegamento {
-    private int id;
+    private final int id;
     public Serpente(int id, int testaX, int testaY, int codaX, int codaY) {
         if (testaX <= codaX) {
             throw new IllegalArgumentException();
@@ -24,10 +24,5 @@ public class Serpente extends Collegamento {
 
     public int getId() {
         return id;
-    }
-
-    @Override
-    public void percorri(Giocatore g) {
-        g.setPos(bottom);
     }
 }
