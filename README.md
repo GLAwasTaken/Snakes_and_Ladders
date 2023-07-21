@@ -14,4 +14,4 @@
     contengono le classi che implementano gli omonimi Design Pattern
 
 # Come eseguire l'applicazione 
- Per far partire l'applicazione eseguire la classe GameSimulation.java
+ Per far partire l'applicazione eseguire il main della classe main.GameSimulation.java
