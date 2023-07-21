@@ -1,22 +1,14 @@
 package main.observer;
+import main.observer.subject.AbstractButtonSubject;
 
 public abstract class ButtonObserver implements ObserverIF {
-    public enum State {PRESSED, NOT_PRESSED}
-    private State state;
+    protected AbstractButtonSubject.State state; //prende lo stato del subject
 
     public ButtonObserver() {
-        state = State.NOT_PRESSED;
+        state = AbstractButtonSubject.State.NOT_PRESSED;
     }
 
-    public State getState() {
+    public AbstractButtonSubject.State getState() {
         return state;
-    }
-
-    @Override
-    public void update() {
-        switch (state) {
-            case PRESSED -> state = State.NOT_PRESSED;
-            case NOT_PRESSED -> state = State.PRESSED;
-        }
     }
 }

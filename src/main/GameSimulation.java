@@ -5,9 +5,9 @@ import main.collegamento.Scala;
 import main.collegamento.Serpente;
 import main.gui.FinestraConfigurazione;
 import main.gui.FinestraPrincipale;
-import main.observer.ButtonObserver;
 import main.observer.ConfigurationObserver;
 import main.observer.LabelsObserver;
+import main.observer.subject.AbstractButtonSubject;
 import main.observer.subject.ConfigurationButtonSubject;
 import main.observer.subject.LabelsButtonSubject;
 import main.state_singleton.Locanda;
@@ -45,7 +45,7 @@ public class GameSimulation {
         fc.init();
         ConfigurationObserver o1 = new ConfigurationObserver(submit);
         submit.attach(o1);
-        if (o1.getState() == ButtonObserver.State.NOT_PRESSED) {
+        if (o1.getState() == AbstractButtonSubject.State.NOT_PRESSED) {
             try {
                 mutexConf.acquire();
             } catch (InterruptedException e) {
@@ -67,12 +67,6 @@ public class GameSimulation {
             }
             if (storico != null) {
                 try {
-                    Thread messaggio = new Thread(() -> {
-                        String title = "Ti verrà comunicata la fine della partita";
-                        String msg = "Non aprire il file dello storico prima che la partita finisca.";
-                        JOptionPane.showMessageDialog(chooser,msg,title,JOptionPane.INFORMATION_MESSAGE);
-                    }); //uso un thread a parte per evitare che l'esecuzione si blocchi se l'osservatore non clicca OK
-                    messaggio.start();
                     PrintWriter out = new PrintWriter(new FileOutputStream(storico),true);
                     while (running) {
                         for (int i = 0; i<tabellone.getNumGiocatori(); i++) {
@@ -101,7 +95,7 @@ public class GameSimulation {
                                 vincitore = cur;
                                 running = false;
                                 out.println("Il giocatore p"+(vincitore.getId()+1)+" ha vinto");
-                                JOptionPane.showMessageDialog(chooser,"La partita è termintata, ora puoi visualizzare lo storico!");
+                                JOptionPane.showMessageDialog(chooser,"La partita è termintata, ora puoi visualizzare lo storico sul file "+storico.getName()+"!");
                                 break;
                             }
                         }
@@ -126,13 +120,14 @@ public class GameSimulation {
             while (running) {
                 for (int i=0; i<tabellone.getNumGiocatori(); i++) {
                     Giocatore cur = tabellone.getGiocatori()[i];
-                    if (o2.getState() == ButtonObserver.State.NOT_PRESSED) {
+                    if (o2.getState() == AbstractButtonSubject.State.NOT_PRESSED) {
                         try {
                             mutexMain.acquire();
                         } catch (InterruptedException e) {
                             System.out.println("Interruzione indesiderata");
                         }
                     }
+                    roll.setState(AbstractButtonSubject.State.NOT_PRESSED); //aggiorno lo stato di roll
                     int lancio = calcolaLancio(cur);
                     int casella = Tabellone.validaCasella(cur.getCasella(),lancio,tabellone.getN()*tabellone.getM());
                     if (conf.isDoppioSei() && lancio == 12) {

@@ -12,17 +12,13 @@ public class ConfigurationObserver extends ButtonObserver {
         this.subject = subject;
     }
 
-    public ConfigurationButtonSubject getSubject() {
-        return subject;
-    }
-
     public Configurazione getConf() {
         return conf;
     }
 
     @Override
     public void update() {
-        super.update();
+        state = subject.getState();
         conf = subject.getConf();
     }
 }

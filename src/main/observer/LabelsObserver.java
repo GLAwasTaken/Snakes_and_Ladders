@@ -13,17 +13,13 @@ public class LabelsObserver extends ButtonObserver {
         this.subject = subject;
     }
 
-    public LabelsButtonSubject getSubject() {
-        return subject;
-    }
-
     public Label[] getLabels() {
         return labels;
     }
 
     @Override
     public void update() {
-        super.update();
+        state = subject.getState();
         labels = subject.getLabels();
     }
 }

@@ -114,6 +114,7 @@ public class FinestraPrincipale {
 
         roll.setLabels(new Label[]{turnoDi,estrazione});
         roll.getSubject().addActionListener(e -> {
+            roll.notifica();
             mutex.release();
         });
 

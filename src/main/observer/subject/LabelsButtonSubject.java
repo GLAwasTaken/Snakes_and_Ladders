@@ -10,9 +10,7 @@ public class LabelsButtonSubject extends AbstractButtonSubject {
     private Label[] labels;
 
     public LabelsButtonSubject(JButton subject) {
-        super();
-        this.subject = subject;
-        subject.addActionListener(e -> notifica());
+        super(subject);
     }
 
     public Label[] getLabels() {

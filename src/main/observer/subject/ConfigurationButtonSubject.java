@@ -10,8 +10,7 @@ public class ConfigurationButtonSubject extends AbstractButtonSubject {
     private Configurazione conf;
 
     public ConfigurationButtonSubject(JButton subject) {
-        super();
-        this.subject = subject;
+        super(subject);
     }
 
     public Configurazione getConf() {
